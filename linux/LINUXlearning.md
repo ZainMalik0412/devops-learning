@@ -1,4 +1,4 @@
-# Linux Command Line Notes (Zain’s DevOps Learning)
+# Linux Notes 
 
 ## Table of contents
 1. [Introduction](#introduction)
