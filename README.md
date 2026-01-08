@@ -35,7 +35,7 @@ Learning to provision and manage cloud resources programmatically with version-c
 ### 🔄 Continuous Integration/Continuous Deployment (CI/CD)
 Automating build, test, and deployment pipelines to deliver software faster and more reliably through tools like GitHub Actions and GitHub CLI.
 
-## �️ Technologies & Tools
+## Technologies & Tools
 
 <p align="center">
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/vscode/vscode-original.svg" alt="VS Code" width="80" height="80"/>
@@ -47,7 +47,7 @@ Automating build, test, and deployment pipelines to deliver software faster and 
   <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-plain.svg" alt="Git" width="80" height="80"/>
 </p>
 
-## � Repository Structure
+## Repository Structure
 
 ```
 ├── networking/         # Network concepts and configurations
