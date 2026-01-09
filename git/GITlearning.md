@@ -22,7 +22,7 @@
 19. [Security and secrets hygiene](#security-and-secrets-hygiene)
 20. [Connecting to GitHub (remotes)](#connecting-to-github-remotes)
 21. [Mini command recipes](#mini-command-recipes)
-22. [Quick self test](#quick-self-test)
+
 
 ---
 
