@@ -1,8 +1,6 @@
 # 🚀 DevOps Learning Journey
 
 <p align="center">
-  <img src="https://media.licdn.com/dms/image/v2/D4D12AQHMqN6oTtU68Q/article-cover_image-shrink_720_1280/article-cover_image-shrink_720_1280/0/1681633774538?e=2147483647&v=beta&t=EZrcZ2DM-QqXRO0_XAnFXgD_fwsrVJe6Bnh5l3RiSTY"style="width: 100%; max-width: 600px; height: auto;" alt="Banner"/>
-
 
 ## 📚 About This Repository
 
