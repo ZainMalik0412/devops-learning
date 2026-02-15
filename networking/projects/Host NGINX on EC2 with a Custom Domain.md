@@ -24,17 +24,7 @@ The goal was to understand:
 
 ## Step-by-Step Process
 
-### 1) Launch EC2 (Ubuntu) + Open Port 80
-
-Created an EC2 instance using Ubuntu.
-
-**Security Group Inbound Rules:**
-- **SSH (22)** from my IP
-- **HTTP (80)** from anywhere (0.0.0.0/0)
-
-![EC2 Instance with Security Group Configuration](screenshots/01-ec2-instance-security-group.png)
-
-### 2) Allocate and Associate an Elastic IP
+### 1) Allocate and Associate an Elastic IP
 
 Allocated an Elastic IP and associated it with the EC2 instance.
 
@@ -44,7 +34,7 @@ Allocated an Elastic IP and associated it with the EC2 instance.
 
 ![Elastic IP Association with Instance](screenshots/02-elastic-ip-association.png)
 
-### 3) SSH into Server and Install NGINX
+### 2) SSH into Server and Install NGINX
 
 After connecting via SSH, installed and started NGINX:
 
@@ -56,19 +46,19 @@ sudo systemctl enable --now nginx
 
 ![NGINX Service Running](screenshots/03-nginx-service-running.png)
 
-### 4) Verify NGINX Locally on Instance
+### 3) Verify NGINX Locally on Instance
 
 Confirmed the web server was responding internally using `curl`:
 
 ![Local NGINX Test via curl](screenshots/04-curl-localhost-test.png)
 
-### 5) Verify NGINX Loads via Public IP
+### 4) Verify NGINX Loads via Public IP
 
 Tested in browser using the Elastic IP/public IPv4 address.
 
 ![NGINX Default Page via Public IP](screenshots/05-nginx-via-public-ip.png)
 
-### 6) Configure Route 53 DNS (A Record)
+### 5) Configure Route 53 DNS (A Record)
 
 In the hosted zone for the domain, created an A record pointing the root domain to the Elastic IP.
 
@@ -82,17 +72,11 @@ In the hosted zone for the domain, created an A record pointing the root domain 
 
 ![Hosted Zone Records Showing A Record](screenshots/07-hosted-zone-records.png)
 
-### 7) Validate DNS Resolution
-
-Tested from local machine using `nslookup` to confirm DNS was returning the correct result.
-
-![DNS Resolution Check via nslookup](screenshots/08-dns-resolution-nslookup.png)
-
-### 8) Confirm Domain Loads NGINX Page
+### 6) Confirm Domain Loads NGINX Page
 
 Opened the domain in browser and confirmed the default NGINX page loaded successfully.
 
-![NGINX Default Page via Custom Domain](screenshots/09-nginx-via-custom-domain.png)
+![NGINX Default Page via Custom Domain](screenshots/08-nginx-via-custom-domain.png)
 
 ## Cleanup (Prevent AWS Costs)
 After completing the project, cleaned up AWS resources to avoid ongoing charges:
