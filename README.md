@@ -6,7 +6,7 @@
 
 Welcome to my GitHub repository documenting my pathway to becoming a DevOps engineer! This is my personal learning space where I track progress, store notes, scripts, projects, and resources as I dive deeper into the DevOps world. This repo serves as my digital notebook and portfolio, constantly evolving as I expand my knowledge. Here you'll find organised notes, code snippets, configurations, and hands on projects that showcase my learning journey.
 
-## 🎯 Learning Focus Areas
+## 🎯 Learning
 
 ### 🐧 **Linux**
 Mastering the Linux operating system, including system administration, file management, and command line proficiency.
