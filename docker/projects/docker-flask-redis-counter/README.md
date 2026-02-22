@@ -1,45 +1,44 @@
-# Docker Flask Redis Counter Project
+# Mini Project: Docker Flask Redis Counter
 
 ## Overview
 
-This project demonstrates a simple web application built with Flask that uses Redis for persistent data storage. The application consists of two main services:
+This mini project demonstrates how to build and run a multi-container application using Docker Compose. A Flask web app connects to a Redis backend to track and persist page visit counts.
 
-- **Flask Web App**: A lightweight Python web server that tracks visit counts
-- **Redis Database**: An in-memory database used for storing and persisting the visit counter
+### Learning Objectives
 
-## Architecture
+The goal was to understand:
+- How to containerise a Python Flask application with Docker
+- How to orchestrate multiple containers using Docker Compose
+- How inter-container networking works via service names
+- How Docker volumes provide data persistence across container restarts
 
-```
-User Browser → Flask App (Port 5001) → Redis Database (Port 6379)
-```
+## What I Built
 
-### Key Features
-
-- **Visit Counter**: Tracks the number of visits to the `/count` endpoint
-- **Redis Persistence**: Data persists across container restarts using Redis append-only file (AOF)
-- **Environment Configuration**: Redis connection details configurable via environment variables
-- **Docker Compose**: Multi-container setup with service orchestration
-- **Scalability**: Demonstrates container scaling concepts
+- A Flask web app with a home page and a visit counter page
+- A Redis container for storing the visit count
+- A `docker-compose.yml` to orchestrate both services
+- Redis persistence using a named volume with append-only file (AOF)
 
 ## Project Structure
 
 ```
 docker-flask-redis-counter/
 ├── app/
-│   ├── app.py              # Flask application code
+│   ├── app.py              # Flask application
 │   ├── requirements.txt    # Python dependencies
-│   └── Dockerfile         # Flask app container definition
-├── docker-compose.yml      # Multi-container orchestration
-└── README.md              # This documentation
+│   └── Dockerfile          # Container definition for Flask
+├── docker-compose.yml       # Multi-container orchestration
+├── screenshots/             # Project screenshots
+└── README.md
 ```
 
-## Step-by-Step Implementation
+## Step-by-Step Process
 
-### Step 1: Build the Flask App
+### 1) Build the Flask App
 
-#### 1.1 Create `app/app.py`
-
-The Flask application provides two endpoints:
+Created `app/app.py` with two routes:
+- `/` — Welcome/home page
+- `/count` — Increments and displays the Redis-backed visit counter
 
 ```python
 import os
@@ -62,29 +61,21 @@ def home():
 def count():
     visits = r.incr(REDIS_KEY)
     return f"Visit count: {visits}"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=False)
 ```
 
-**What this does:**
-- `/` endpoint: Shows a welcome message with navigation hint
-- `/count` endpoint: Increments a Redis key and returns the current count
-- Redis connection details are configurable via environment variables
-
-#### 1.2 Create `app/requirements.txt`
+Created `app/requirements.txt` with the dependencies:
 
 ```
 flask==3.0.0
 redis==5.0.1
-gunicorn==22.0.0
 ```
 
-**Dependencies:**
-- **Flask**: Web framework for the application
-- **Redis**: Python client for Redis database
-- **Gunicorn**: Production-grade WSGI server for better container performance
+### 2) Dockerise the Flask App
 
-### Step 2: Dockerise the Flask App
-
-#### 2.1 Create `app/Dockerfile`
+Created `app/Dockerfile`:
 
 ```dockerfile
 FROM python:3.12-slim
@@ -98,26 +89,19 @@ COPY app.py .
 
 EXPOSE 5000
 
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+CMD ["python", "app.py"]
 ```
 
-**Dockerfile breakdown:**
-- Uses Python 3.12 slim image for smaller footprint
-- Sets working directory to `/app`
-- Installs dependencies without cache for smaller image size
-- Exposes port 5000 for web traffic
-- Runs Gunicorn as production server (better than Flask development server)
+### 3) Create Docker Compose (Flask + Redis)
 
-### Step 3: Docker Compose Configuration
-
-#### 3.1 Create `docker-compose.yml`
+Created `docker-compose.yml` in the project root:
 
 ```yaml
 services:
   web:
     build: ./app
     ports:
-      - "5001:5000"
+      - "8080:5000"
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -135,289 +119,100 @@ volumes:
   redis_data:
 ```
 
-**Key features:**
-- **Service orchestration**: Manages both Flask and Redis containers
-- **Port mapping**: Maps host port 5001 to container port 5000
-- **Environment variables**: Passes Redis connection details to Flask
-- **Service dependencies**: Ensures Redis starts before Flask app
-- **Data persistence**: Uses named volume for Redis data persistence
-- **Redis AOF**: Enables append-only file for durability
+**What this achieves:**
+- Flask runs in one container, Redis in another
+- Flask connects to Redis using the service name `redis`
+- Redis data persists using a named volume (`redis_data`)
+- `depends_on` ensures Redis starts before the Flask app
 
-### Step 4: Build and Run
+### 4) Run the Multi-Container App
+
+From the project root:
 
 ```bash
-# Build and start all services
 docker compose up --build
-
-# Or run in detached mode
-docker compose up --build -d
 ```
 
-### Step 5: Test the Application
+![Docker Compose Build and Start](screenshots/01-docker-compose-build.png)
 
-#### 5.1 Test Welcome Page
+Both containers start successfully — Redis initialises and Flask begins serving:
 
-```bash
-curl http://localhost:5001
-```
+![Containers Running](screenshots/02-containers-running.png)
 
-**Expected output:**
-```
-Welcome! Go to /count to increment the visit counter.
-```
+Verified both services are running with `docker compose ps`:
 
-#### 5.2 Test Counter Functionality
+![Docker Compose PS](screenshots/03-docker-compose-ps.png)
 
-```bash
-# First visit
-curl http://localhost:5001/count
-# Output: Visit count: 1
+### 5) Test the App in the Browser
 
-# Second visit
-curl http://localhost:5001/count
-# Output: Visit count: 2
+#### 5.1 Welcome Page
 
-# Third visit
-curl http://localhost:5001/count
-# Output: Visit count: 3
-```
+Opened `http://localhost:8080/` in the browser:
 
-### Step 6: Redis Persistence Testing
+![Welcome Page](screenshots/04-welcome-page.png)
 
-#### 6.1 Test Data Persistence
+#### 5.2 Counter Page
 
-1. Visit `/count` several times to increment the counter
-2. Stop all containers:
+Opened `http://localhost:8080/count` and refreshed multiple times — the count increments with each visit:
+
+![Counter Page](screenshots/05-counter-page.png)
+
+### 6) Redis Persistence (Volume Proof)
+
+This proves the Redis volume works and data survives container restarts.
+
+1. Hit `/count` until reaching a number (e.g. 12)
+2. Stop the containers:
    ```bash
    docker compose down
    ```
-3. Restart containers:
+3. Start again:
    ```bash
-   docker compose up -d
+   docker compose up
    ```
-4. Test `/count` again - the counter should continue from the previous value
+4. Visit `/count` again — the counter continues from where it left off, it does not reset
 
-**This proves Redis persistence is working correctly.**
+### 7) Cleanup
 
-### Step 7: Container Scaling (Demonstration)
-
-#### 7.1 Scale Web Service
+To stop containers:
 
 ```bash
-# Scale to 3 web containers
-docker compose up --build --scale web=3
-
-# Check running containers
-docker compose ps
+docker compose down
 ```
 
-**Important Note on Scaling:**
-- Multiple containers are created but only one can bind to port 5001
-- Proper load balancing would require a reverse proxy (NGINX/HAProxy)
-- This demonstrates the concept but shows the limitation of simple port mapping
-
-#### 7.2 Scaling Limitations
-
-With current setup:
-- Only one container can publish to port 5001
-- Other scaled containers run but aren't accessible via port mapping
-- Solution: Add NGINX as load balancer in front of multiple web containers
-
-### Step 8: Cleanup
+To stop containers **and** delete the Redis volume (wipes the stored count):
 
 ```bash
-# Stop and remove containers
-docker compose down
-
-# Stop containers and remove volumes (wipes Redis data)
 docker compose down -v
 ```
 
 ## Environment Variables
 
-The Flask application supports the following environment variables:
-
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `REDIS_HOST` | `redis` | Redis server hostname |
+| `REDIS_HOST` | `redis` | Redis server hostname (Docker service name) |
 | `REDIS_PORT` | `6379` | Redis server port |
-| `REDIS_KEY` | `visits` | Redis key name for counter |
+| `REDIS_KEY` | `visits` | Redis key used for the counter |
 
-## Docker Commands Reference
-
-### Essential Commands
+## Useful Commands
 
 ```bash
-# Build and start services
+# Build and start
 docker compose up --build
 
 # Start in background
 docker compose up -d
 
-# View running containers
+# Check running containers
 docker compose ps
 
 # View logs
-docker compose logs
-
-# View logs for specific service
 docker compose logs web
 docker compose logs redis
 
-# Stop services
+# Stop containers
 docker compose down
 
-# Stop services and remove volumes
+# Stop and remove volumes
 docker compose down -v
-
-# Scale services
-docker compose up --scale web=3
-
-# Rebuild specific service
-docker compose up --build web
 ```
-
-### Advanced Commands
-
-```bash
-# Execute commands in running container
-docker compose exec web sh
-docker compose exec redis redis-cli
-
-# Monitor resource usage
-docker stats
-
-# Inspect container details
-docker compose inspect web
-```
-
-## Technical Concepts Demonstrated
-
-### 1. Multi-Container Applications
-- Service orchestration with Docker Compose
-- Inter-service communication
-- Service dependencies
-
-### 2. Data Persistence
-- Docker volumes for data persistence
-- Redis append-only file (AOF) configuration
-- Data survival across container restarts
-
-### 3. Environment Configuration
-- Environment variable injection
-- Configuration flexibility
-- Development vs production setups
-
-### 4. Container Networking
-- Service discovery via service names
-- Port mapping
-- Internal container communication
-
-### 5. Application Architecture
-- Web application with database backend
-- Separation of concerns
-- Scalable design patterns
-
-## Troubleshooting
-
-### Common Issues
-
-#### Port Conflicts
-**Problem:** `port is already allocated` error
-**Solution:** 
-- Change port mapping in docker-compose.yml
-- Stop services using the port: `lsof -i :5001` then `kill -9 <PID>`
-
-#### Redis Connection Issues
-**Problem:** Flask can't connect to Redis
-**Solution:**
-- Ensure Redis service is running: `docker compose ps`
-- Check Redis logs: `docker compose logs redis`
-- Verify service name matches `REDIS_HOST` environment variable
-
-#### Container Build Issues
-**Problem:** Build fails during `pip install`
-**Solution:**
-- Check requirements.txt for correct versions
-- Clear Docker cache: `docker system prune -a`
-- Rebuild: `docker compose build --no-cache`
-
-#### Volume Issues
-**Problem:** Data not persisting
-**Solution:**
-- Verify volume exists: `docker volume ls`
-- Check volume mounting: `docker compose inspect redis`
-- Ensure Redis AOF is enabled
-
-### Debugging Commands
-
-```bash
-# Check container status
-docker compose ps
-
-# View service logs
-docker compose logs web
-docker compose logs redis
-
-# Test Redis connection
-docker compose exec redis redis-cli ping
-
-# Check Redis data
-docker compose exec redis redis-cli get visits
-
-# Inspect container configuration
-docker compose inspect web
-docker compose inspect redis
-
-# Access container shell
-docker compose exec web sh
-docker compose exec redis sh
-```
-
-## Performance Considerations
-
-### Optimization Tips
-
-1. **Image Size**: Use `--no-cache-dir` in pip install
-2. **Multi-stage builds**: For production, consider multi-stage Dockerfiles
-3. **Health checks**: Add health checks to docker-compose.yml
-4. **Resource limits**: Set memory and CPU limits in production
-5. **Redis configuration**: Tune Redis settings for production workloads
-
-### Production Enhancements
-
-For production deployment, consider:
-
-1. **Load Balancer**: Add NGINX/HAProxy for proper load distribution
-2. **SSL/TLS**: Implement HTTPS with certificates
-3. **Monitoring**: Add health checks and monitoring
-4. **Logging**: Centralized logging solution
-5. **Security**: Network policies and secrets management
-
-## Learning Outcomes
-
-This project demonstrates:
-
-- **Container Orchestration**: Managing multi-container applications
-- **Data Persistence**: Implementing durable storage with Docker volumes
-- **Service Communication**: Inter-service networking and dependencies
-- **Configuration Management**: Environment-based configuration
-- **Scaling Concepts**: Understanding container scaling limitations
-- **Production Practices**: Using Gunicorn instead of development server
-
-## Next Steps
-
-Potential enhancements:
-
-1. **Add NGINX**: Implement proper load balancing
-2. **SSL/TLS**: Add HTTPS support
-3. **Monitoring**: Add health checks and metrics
-4. **CI/CD**: Automate builds and deployments
-5. **Kubernetes**: Migrate to Kubernetes for advanced orchestration
-
----
-
-**Project Status:** ✅ Complete  
-**Last Updated:** February 2026  
-**Technologies Used:** Docker, Docker Compose, Flask, Redis, Gunicorn  
-**Features:** Web counter, Redis persistence, container orchestration
