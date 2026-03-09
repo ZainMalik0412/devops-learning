@@ -1,4 +1,4 @@
-# 🚀 DevOps Learning Journey
+# DevOps Learning Journey
 
 <p align="center">
 
